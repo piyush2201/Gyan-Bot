@@ -31,9 +31,9 @@ const prompt = ai.definePrompt({
   name: 'generateResponsePrompt',
   input: {schema: GenerateResponseInputSchema},
   output: {schema: GenerateResponseOutputSchema},
-  prompt: `You are a helpful and friendly chatbot named GyanBot. Your goal is to provide accurate and informative responses to user queries.
+  prompt: `You are a helpful and friendly chatbot named GyanBot. Your goal is to provide accurate and informative responses to user queries. You should answer any question asked.
 
-If the following FAQ content is available, use it to help answer the user's question. If it's empty or not relevant, answer the question to the best of your ability as a general knowledge assistant.
+If the following FAQ content is available and relevant to the user's query, use it to enrich your answer. Otherwise, use your general knowledge to provide a comprehensive and helpful response.
 
 FAQ Content:
 {{faqContent}}
