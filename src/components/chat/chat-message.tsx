@@ -20,7 +20,7 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
       })}
     >
       {isAi && (
-        <Avatar className="h-8 w-8 border border-primary/50">
+        <Avatar className="h-8 w-8 border-primary/50">
           <AvatarFallback className="bg-primary/20">
             <Bot className="h-5 w-5 text-primary drop-shadow-[0_0_4px_hsl(var(--primary))]" />
           </AvatarFallback>
@@ -31,7 +31,7 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
           'max-w-[75%] space-y-2 rounded-lg px-4 py-3 shadow-md',
           isAi
             ? 'bg-secondary text-secondary-foreground'
-            : 'bg-primary text-primary-foreground'
+            : 'bg-accent text-accent-foreground'
         )}
       >
         {isLoading ? (
@@ -44,7 +44,7 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
         )}
       </div>
       {!isAi && (
-        <Avatar className="h-8 w-8 border border-accent/50">
+        <Avatar className="h-8 w-8 border-accent/50">
           <AvatarFallback className="bg-accent/20">
             <User className="h-5 w-5 text-accent drop-shadow-[0_0_4px_hsl(var(--accent))]" />
           </AvatarFallback>
