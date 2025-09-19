@@ -98,7 +98,7 @@ export function ChatPanel() {
       <CardHeader className="flex flex-row items-center gap-3">
         <Bot className="w-8 h-8 text-primary drop-shadow-[0_0_4px_hsl(var(--primary))]" />
         <div>
-          <CardTitle className="font-headline text-primary-foreground">AI Assistant</CardTitle>
+          <CardTitle className="font-headline text-primary-foreground">GyanBot</CardTitle>
           <CardDescription>Ask me anything! I'll do my best to help.</CardDescription>
         </div>
       </CardHeader>

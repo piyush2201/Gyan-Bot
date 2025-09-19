@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'ChattyFAQ',
+  title: 'GyanBot',
   description: 'An AI-powered FAQ chatbot.',
 };
 
