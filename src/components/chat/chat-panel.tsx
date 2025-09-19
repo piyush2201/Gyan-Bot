@@ -57,12 +57,12 @@ function SubmitButton() {
       size="icon"
       disabled={pending}
       aria-disabled={pending}
-      className="bg-accent text-accent-foreground hover:bg-accent/90 disabled:bg-accent/50 group shrink-0"
+      className="bg-primary text-primary-foreground hover:bg-primary/90 disabled:bg-primary/50 group shrink-0"
     >
       {pending ? (
         <LoaderCircle className="h-5 w-5 animate-spin" />
       ) : (
-        <Send className="h-5 w-5 text-accent-foreground group-hover:scale-110 transition-transform" />
+        <Send className="h-5 w-5 text-primary-foreground group-hover:scale-110 transition-transform" />
       )}
       <span className="sr-only">Send message</span>
     </Button>
@@ -111,7 +111,7 @@ export function ChatPanel() {
             <Input
               name="query"
               placeholder="Type your question here..."
-              className="flex-1 bg-background text-base focus-visible:ring-accent"
+              className="flex-1 bg-background text-base focus-visible:ring-primary"
               autoComplete="off"
               required
             />

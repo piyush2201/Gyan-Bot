@@ -3,7 +3,7 @@ import { ChatPanel } from '@/components/chat/chat-panel';
 export default function Home() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <header className="p-4 border-b border-border shadow-md shadow-black/20">
+      <header className="p-4 border-b border-border shadow-md">
         <div className="container mx-auto flex items-center gap-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -20,7 +20,7 @@ export default function Home() {
             <path d="M3.2 16.5A6.5 6.5 0 0 1 12 7.5a6.5 6.5 0 0 1 7.2 4.5" />
             <path d="M7 14.5a2.5 2.5 0 0 1 0-5" />
           </svg>
-          <h1 className="text-2xl font-bold font-headline text-primary-foreground tracking-wider">
+          <h1 className="text-2xl font-bold font-headline tracking-wider">
             GyanBot
           </h1>
         </div>
