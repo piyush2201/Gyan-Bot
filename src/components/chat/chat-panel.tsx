@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { useFormState, useFormStatus } from 'react-dom';
+import { useEffect, useRef, useActionState } from 'react';
+import { useFormStatus } from 'react-dom';
 import { Send, Bot, LoaderCircle } from 'lucide-react';
 import { submitQuery, type ChatState, type ChatMessage as ChatMessageType } from '@/app/actions';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -70,7 +70,7 @@ function SubmitButton() {
 }
 
 export function ChatPanel() {
-  const [state, formAction] = useFormState(submitQuery, initialState);
+  const [state, formAction] = useActionState(submitQuery, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   
