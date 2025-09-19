@@ -37,9 +37,7 @@ FAQ Content:
 {{faqContent}}
 
 User Query:
-{{query}}
-
-Response:`, // Corrected syntax here
+{{query}}`,
 });
 
 const generateResponseFlow = ai.defineFlow(
