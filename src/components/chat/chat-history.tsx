@@ -46,24 +46,26 @@ export function ChatHistory() {
         <SidebarMenu>
           {chatHistory.map((chat) => (
             <SidebarMenuItem key={chat.id}>
-              <SidebarMenuButton
-                className="w-full justify-start relative group/item"
-                isActive={chat.id === activeChat?.id}
-                onClick={() => setActiveChat(chat.id)}
-              >
-                <MessageSquare className="shrink-0" />
-                <span className="truncate flex-1">
-                  {chat.messages[0]?.content ?? 'New Chat'}
-                </span>
-                <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="h-6 w-6 absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100"
-                    onClick={(e) => handleDeleteChat(e, chat.id)}
+              <div className="relative group/item flex items-center">
+                <SidebarMenuButton
+                  className="w-full justify-start"
+                  isActive={chat.id === activeChat?.id}
+                  onClick={() => setActiveChat(chat.id)}
                 >
-                    <Trash2 className="h-4 w-4" />
+                  <MessageSquare className="shrink-0" />
+                  <span className="truncate flex-1">
+                    {chat.messages[0]?.content ?? 'New Chat'}
+                  </span>
+                </SidebarMenuButton>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-6 w-6 absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover/item:opacity-100"
+                  onClick={(e) => handleDeleteChat(e, chat.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
                 </Button>
-              </SidebarMenuButton>
+              </div>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
