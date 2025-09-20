@@ -87,9 +87,14 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
   }, [chatHistory, activeChatId, saveHistory]);
 
   const clearHistory = useCallback(() => {
-    saveHistory([]);
-    setActiveChatId(null);
-  }, [saveHistory]);
+    try {
+      localStorage.removeItem(CHAT_HISTORY_STORAGE_KEY);
+      setChatHistory([]);
+      setActiveChatId(null);
+    } catch (error) {
+      console.error('Failed to clear chat history from localStorage', error);
+    }
+  }, []);
 
   const activeChat = chatHistory.find(chat => chat.id === activeChatId) || null;
 
