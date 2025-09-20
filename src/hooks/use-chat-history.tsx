@@ -1,20 +1,21 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import type { ChatMessage } from '@/app/actions';
+import type { ChatMessage, DocumentInfo } from '@/app/actions';
 
 export interface ChatSession {
   id: string;
   messages: ChatMessage[];
   createdAt: number;
+  document?: DocumentInfo | null;
 }
 
 interface ChatHistoryContextType {
   chatHistory: ChatSession[];
   activeChat: ChatSession | null;
   setActiveChat: (id: string | null) => void;
-  createChat: (messages: ChatMessage[]) => void;
-  updateChat: (id: string, messages: ChatMessage[]) => void;
+  createChat: (messages: ChatMessage[], document?: DocumentInfo | null) => void;
+  updateChat: (id: string, messages: ChatMessage[], document?: DocumentInfo | null) => void;
   deleteChat: (id: string) => void;
   clearHistory: () => void;
 }
@@ -58,20 +59,21 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
     setActiveChatId(id);
   }, []);
 
-  const createChat = useCallback((messages: ChatMessage[]) => {
+  const createChat = useCallback((messages: ChatMessage[], document?: DocumentInfo | null) => {
     const newChat: ChatSession = {
       id: crypto.randomUUID(),
       messages,
       createdAt: Date.now(),
+      document,
     };
     const updatedHistory = [newChat, ...chatHistory];
     saveHistory(updatedHistory);
     setActiveChatId(newChat.id);
   }, [chatHistory, saveHistory]);
 
-  const updateChat = useCallback((id: string, messages: ChatMessage[]) => {
+  const updateChat = useCallback((id: string, messages: ChatMessage[], document?: DocumentInfo | null) => {
     const updatedHistory = chatHistory.map(chat =>
-      chat.id === id ? { ...chat, messages } : chat
+      chat.id === id ? { ...chat, messages, document: document !== undefined ? document : chat.document } : chat
     );
     saveHistory(updatedHistory);
   }, [chatHistory, saveHistory]);

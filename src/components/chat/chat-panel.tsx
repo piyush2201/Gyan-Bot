@@ -72,6 +72,7 @@ export function ChatPanel() {
   
   const initialState: ChatState = {
     messages: activeChat?.messages ?? [],
+    document: activeChat?.document,
   };
 
   const [state, formAction] = useActionState(submitQuery, initialState);
@@ -84,12 +85,20 @@ export function ChatPanel() {
   
   // This effect will sync the form's state with the active chat from history
   useEffect(() => {
-    const newInitialState: ChatState = { messages: activeChat?.messages ?? [] };
+    const newInitialState: ChatState = { messages: activeChat?.messages ?? [], document: activeChat?.document };
     // This is a bit of a hack to reset the useActionState's internal state
     // when the active chat changes. We wrap it in startTransition to avoid the warning.
     startTransition(() => {
-        formAction(newInitialState as any);
+        formAction(newInitialState);
     });
+    // If the active chat has a document, reflect it in the local file state
+    if (activeChat?.document) {
+        setFile({ name: activeChat.document.name } as File);
+        setFileDataUri(activeChat.document.dataUri);
+    } else {
+        setFile(null);
+        setFileDataUri(null);
+    }
   }, [activeChat, formAction]);
 
 
@@ -97,21 +106,27 @@ export function ChatPanel() {
     // When the form action returns a new state, update the history
     if (state.messages.length > (activeChat?.messages.length ?? 0)) {
         if (!activeChat || state.messages.length === 1) { // New chat
-            createChat(state.messages);
+            createChat(state.messages, state.document);
         } else { // Existing chat
-            updateChat(activeChat.id, state.messages);
+            updateChat(activeChat.id, state.messages, state.document);
         }
     }
-  }, [state.messages, activeChat, createChat, updateChat]);
+  }, [state.messages, state.document, activeChat, createChat, updateChat]);
 
 
   useEffect(() => {
     if (formRef.current && state.messages.length > 0) {
-        // Reset form on successful assistant response
+        // Reset form on successful assistant response, but keep file info if a new file wasn't just uploaded.
         if (!state.error && state.messages.at(-1)?.role === 'assistant') {
+            const isNewFileUpload = !!(formRef.current.querySelector('input[name="fileDataUri"]') as HTMLInputElement)?.value;
             formRef.current.reset();
-            setFile(null);
-            setFileDataUri(null);
+
+            // If we are not in a new file upload, don't clear the file state
+            // to allow follow-up questions.
+            if(isNewFileUpload) {
+              setFile(null);
+              setFileDataUri(null);
+            }
             if(inputRef.current) inputRef.current.focus();
         }
     }
@@ -177,7 +192,14 @@ export function ChatPanel() {
     if(fileInputRef.current) {
         fileInputRef.current.value = '';
     }
+    // Also update the chat history if there was an active document
+    if (activeChat && activeChat.document) {
+        updateChat(activeChat.id, activeChat.messages, null);
+    }
   }
+
+  // Use the file state, which could be from a new upload or from the chat history
+  const currentFile = file || (state.document ? {name: state.document.name} as File : null);
 
   return (
     <Card className="w-full max-w-3xl h-[calc(100vh-120px)] flex flex-col shadow-lg shadow-black/30 border-border overflow-hidden">
@@ -194,10 +216,10 @@ export function ChatPanel() {
             <ChatArea messages={state.messages} />
           </CardContent>
           <CardFooter className="pt-4 flex flex-col items-start gap-2">
-            {file && (
+            {currentFile && (
               <div className="flex items-center gap-2">
                 <Badge variant="secondary" className="pl-2">
-                    <span className="truncate max-w-xs">{file.name}</span>
+                    <span className="truncate max-w-xs">{currentFile.name}</span>
                     <Button variant="ghost" size="icon" className="h-5 w-5 ml-1" onClick={removeFile}>
                         <X className="h-4 w-4" />
                         <span className="sr-only">Remove file</span>
@@ -207,6 +229,7 @@ export function ChatPanel() {
             )}
             <div className="flex w-full items-center space-x-2">
               <input type="hidden" name="fileDataUri" value={fileDataUri || ''} />
+              <input type="hidden" name="fileName" value={file?.name || ''} />
               <Input
                 ref={inputRef}
                 name="query"
@@ -222,6 +245,7 @@ export function ChatPanel() {
                 variant="outline"
                 onClick={handleFileButtonClick}
                 className="group shrink-0"
+                disabled={!!currentFile} // Disable adding a new file if one is already attached
               >
                 <Paperclip className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
                 <span className="sr-only">Attach file</span>

@@ -12,8 +12,14 @@ export interface ChatMessage {
   timestamp: number;
 }
 
+export interface DocumentInfo {
+  name: string;
+  dataUri: string;
+}
+
 export interface ChatState {
   messages: ChatMessage[];
+  document?: DocumentInfo | null; // Keep track of the document in the chat
   error?: string;
 }
 
@@ -21,18 +27,18 @@ export async function submitQuery(
   previousState: ChatState,
   formData: FormData | ChatState
 ): Promise<ChatState> {
-  // When switching chats, formData is not a FormData object.
-  // We can identify this case and simply return the new state.
+  // When switching chats, formData is not a FormData object but the new ChatState.
   if (!(formData instanceof FormData)) {
-    return { messages: (formData as ChatState).messages };
+    return formData; // Simply return the new state for the active chat
   }
   
   const query = formData.get('query') as string;
   const fileDataUri = formData.get('fileDataUri') as string;
+  const fileName = formData.get('fileName') as string;
 
   if (!query) {
     return {
-      messages: previousState.messages,
+      ...previousState,
       error: 'Please enter a query.',
     };
   }
@@ -43,8 +49,15 @@ export async function submitQuery(
     content: query,
     timestamp: Date.now(),
   };
-
+  
   const currentMessages = [...previousState.messages, userMessage];
+  
+  // Determine if we have a document for this session
+  let currentDocument = previousState.document;
+  if (fileDataUri && fileName) {
+    currentDocument = { name: fileName, dataUri: fileDataUri };
+  }
+
 
   try {
     let aiResponse;
@@ -52,10 +65,10 @@ export async function submitQuery(
     const fullQuery = `CONVERSATION HISTORY:\n${history}\n\nCURRENT QUERY: ${query}`;
 
 
-    if (fileDataUri) {
+    if (currentDocument?.dataUri) {
       aiResponse = await answerFromDocument({
         query: fullQuery,
-        documentDataUri: fileDataUri,
+        documentDataUri: currentDocument.dataUri,
       });
     } else {
       const relevantFAQs = await retrieveRelevantFAQs(query);
@@ -81,6 +94,7 @@ export async function submitQuery(
     
     return {
       messages: [...currentMessages, assistantMessage],
+      document: currentDocument, // Persist the document within this chat session's state
     };
   } catch (error) {
     console.error(error);
@@ -89,6 +103,7 @@ export async function submitQuery(
     // Return the user message in the history even on error, for better UX
     return {
       messages: currentMessages,
+      document: currentDocument,
       error: `Sorry, something went wrong. ${errorMessage}`,
     };
   }
