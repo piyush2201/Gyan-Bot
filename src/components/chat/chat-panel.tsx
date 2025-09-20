@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useActionState, useState } from 'react';
+import { useEffect, useRef, useActionState, useState, startTransition } from 'react';
 import { useFormStatus } from 'react-dom';
 import { Send, Bot, LoaderCircle, MapPin, Paperclip, X } from 'lucide-react';
 import { submitQuery, type ChatState, type ChatMessage as ChatMessageType } from '@/app/actions';
@@ -86,8 +86,10 @@ export function ChatPanel() {
   useEffect(() => {
     const newInitialState: ChatState = { messages: activeChat?.messages ?? [] };
     // This is a bit of a hack to reset the useActionState's internal state
-    // when the active chat changes.
-    formAction(newInitialState as any);
+    // when the active chat changes. We wrap it in startTransition to avoid the warning.
+    startTransition(() => {
+        formAction(newInitialState as any);
+    });
   }, [activeChat, formAction]);
 
 
