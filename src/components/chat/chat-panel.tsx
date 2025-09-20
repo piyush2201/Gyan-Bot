@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useActionState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { Send, Bot, LoaderCircle } from 'lucide-react';
+import { Send, Bot, LoaderCircle, MapPin } from 'lucide-react';
 import { submitQuery, type ChatState, type ChatMessage as ChatMessageType } from '@/app/actions';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -73,6 +73,7 @@ export function ChatPanel() {
   const [state, formAction] = useActionState(submitQuery, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   
   useEffect(() => {
     if (formRef.current && state.messages.length > 0) {
@@ -93,6 +94,34 @@ export function ChatPanel() {
     }
   }, [state.error, state.messages.length]);
 
+  const handleLocationClick = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const locationQuery = `My current location is Latitude: ${latitude}, Longitude: ${longitude}. What can you tell me about this place?`;
+          if (inputRef.current) {
+            inputRef.current.value = locationQuery;
+            formRef.current?.requestSubmit();
+          }
+        },
+        (error) => {
+          toast({
+            variant: 'destructive',
+            title: 'Location Error',
+            description: `Could not get location: ${error.message}`,
+          });
+        }
+      );
+    } else {
+      toast({
+        variant: 'destructive',
+        title: 'Location Error',
+        description: 'Geolocation is not supported by this browser.',
+      });
+    }
+  };
+
   return (
     <Card className="w-full max-w-3xl h-[80vh] flex flex-col shadow-lg shadow-black/30 border-border">
       <CardHeader className="flex flex-row items-center gap-3">
@@ -109,12 +138,23 @@ export function ChatPanel() {
         <CardFooter className="pt-4">
           <div className="flex w-full items-center space-x-2">
             <Input
+              ref={inputRef}
               name="query"
               placeholder="Type your question here..."
               className="flex-1 bg-background text-base focus-visible:ring-primary"
               autoComplete="off"
               required
             />
+            <Button
+              type="button"
+              size="icon"
+              variant="outline"
+              onClick={handleLocationClick}
+              className="group shrink-0"
+            >
+              <MapPin className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
+              <span className="sr-only">Get location</span>
+            </Button>
             <SubmitButton />
           </div>
         </CardFooter>
