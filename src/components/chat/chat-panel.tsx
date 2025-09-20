@@ -123,7 +123,7 @@ export function ChatPanel() {
   };
 
   return (
-    <Card className="w-full max-w-3xl h-[80vh] flex flex-col shadow-lg shadow-black/30 border-border">
+    <Card className="w-full max-w-3xl h-[80vh] flex flex-col shadow-lg shadow-black/30 border-border overflow-hidden">
       <CardHeader className="flex flex-row items-center gap-3">
         <Bot className="w-8 h-8 text-primary drop-shadow-[0_0_4px_hsl(var(--primary))]" />
         <div>
@@ -131,34 +131,36 @@ export function ChatPanel() {
           <CardDescription>Ask me anything! I'll do my best to help.</CardDescription>
         </div>
       </CardHeader>
-      <form ref={formRef} action={formAction} className="flex flex-col flex-1 overflow-hidden">
-        <CardContent className="flex-1 p-0">
-          <ChatArea messages={state.messages} />
-        </CardContent>
-        <CardFooter className="pt-4">
-          <div className="flex w-full items-center space-x-2">
-            <Input
-              ref={inputRef}
-              name="query"
-              placeholder="Type your question here..."
-              className="flex-1 bg-background text-base focus-visible:ring-primary"
-              autoComplete="off"
-              required
-            />
-            <Button
-              type="button"
-              size="icon"
-              variant="outline"
-              onClick={handleLocationClick}
-              className="group shrink-0"
-            >
-              <MapPin className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
-              <span className="sr-only">Get location</span>
-            </Button>
-            <SubmitButton />
-          </div>
-        </CardFooter>
-      </form>
+      <div className="flex-1 flex flex-col min-h-0">
+        <form ref={formRef} action={formAction} className="flex flex-col flex-1 min-h-0">
+          <CardContent className="flex-1 p-0 overflow-y-auto">
+            <ChatArea messages={state.messages} />
+          </CardContent>
+          <CardFooter className="pt-4">
+            <div className="flex w-full items-center space-x-2">
+              <Input
+                ref={inputRef}
+                name="query"
+                placeholder="Type your question here..."
+                className="flex-1 bg-background text-base focus-visible:ring-primary"
+                autoComplete="off"
+                required
+              />
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                onClick={handleLocationClick}
+                className="group shrink-0"
+              >
+                <MapPin className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
+                <span className="sr-only">Get location</span>
+              </Button>
+              <SubmitButton />
+            </div>
+          </CardFooter>
+        </form>
+      </div>
     </Card>
   );
 }
