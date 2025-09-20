@@ -19,18 +19,19 @@ const initialState: ChatState = {
 function ChatArea({ messages }: { messages: ChatMessageType[] }) {
   const { pending } = useFormStatus();
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTo({
-        top: scrollAreaRef.current.scrollHeight,
+    if (viewportRef.current) {
+      viewportRef.current.scrollTo({
+        top: viewportRef.current.scrollHeight,
         behavior: 'smooth',
       });
     }
   }, [messages, pending]);
 
   return (
-    <ScrollArea className="h-full" ref={scrollAreaRef}>
+    <ScrollArea className="h-full" viewportRef={viewportRef} ref={scrollAreaRef}>
       <div className="p-6 space-y-6">
         {messages.length === 0 && !pending && (
           <div className="text-center text-muted-foreground pt-16">
