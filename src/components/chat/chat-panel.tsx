@@ -70,9 +70,12 @@ function SubmitButton() {
 export function ChatPanel() {
   const { activeChat, updateChat, createChat } = useChatHistory();
   
-  const initialState: ChatState = {
-    messages: activeChat?.messages ?? [],
-    document: activeChat?.document,
+  const initialState: ChatState = activeChat ? {
+    messages: activeChat.messages,
+    document: activeChat.document
+  } : {
+    messages: [],
+    document: null
   };
 
   const [state, formAction] = useActionState(submitQuery, initialState);
@@ -104,19 +107,19 @@ export function ChatPanel() {
         setFile(null);
         setFileDataUri(null);
     }
-  }, [activeChat, formAction]);
+  }, [activeChat]);
 
 
   useEffect(() => {
     // When the form action returns a new state, update the history
     if (state.messages.length > (activeChat?.messages.length ?? 0)) {
-        if (!activeChat || state.messages.length === 1) { // New chat
+        if (!activeChat || (state.messages.length === 1 && !activeChat.messages.length)) { // New chat or first message in a new chat
             createChat(state.messages, state.document);
         } else { // Existing chat
             updateChat(activeChat.id, state.messages, state.document);
         }
     }
-  }, [state.messages, state.document, activeChat, createChat, updateChat]);
+  }, [state.messages, state.document]);
 
 
   useEffect(() => {

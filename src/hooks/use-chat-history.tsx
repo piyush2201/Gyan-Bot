@@ -60,16 +60,39 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const createChat = useCallback((messages: ChatMessage[], document?: DocumentInfo | null) => {
+    // If there's already an empty chat, don't create another one.
+    // This can happen on first load.
+    if (chatHistory.length > 0 && chatHistory[0].messages.length === 0 && messages.length === 0) {
+        setActiveChatId(chatHistory[0].id);
+        return;
+    }
+      
     const newChat: ChatSession = {
       id: crypto.randomUUID(),
       messages,
       createdAt: Date.now(),
       document,
     };
-    const updatedHistory = [newChat, ...chatHistory];
+    
+    // Check if we are creating a chat from a submitted message, or starting a fresh one.
+    const isNewMessage = messages.length > 0;
+    let updatedHistory;
+
+    if (isNewMessage) {
+        // If the current active chat is empty, replace it.
+        const active = chatHistory.find(c => c.id === activeChatId);
+        if (active && active.messages.length === 0) {
+            updatedHistory = chatHistory.map(c => c.id === activeChatId ? newChat : c);
+        } else {
+            updatedHistory = [newChat, ...chatHistory];
+        }
+    } else {
+        updatedHistory = [newChat, ...chatHistory];
+    }
+    
     saveHistory(updatedHistory);
     setActiveChatId(newChat.id);
-  }, [chatHistory, saveHistory]);
+  }, [chatHistory, activeChatId, saveHistory]);
 
   const updateChat = useCallback((id: string, messages: ChatMessage[], document?: DocumentInfo | null) => {
     const updatedHistory = chatHistory.map(chat =>
@@ -91,10 +114,12 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem(CHAT_HISTORY_STORAGE_KEY);
       setChatHistory([]);
       setActiveChatId(null);
+      // After clearing, create a new empty chat to start with.
+      createChat([]);
     } catch (error) {
       console.error('Failed to clear chat history from localStorage', error);
     }
-  }, []);
+  }, [createChat]);
 
   const activeChat = chatHistory.find(chat => chat.id === activeChatId) || null;
 
