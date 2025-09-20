@@ -9,12 +9,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { useChatHistory } from '@/hooks/use-chat-history';
 import { ChatMessage } from './chat-message';
 import { Badge } from '@/components/ui/badge';
-
-const initialState: ChatState = {
-  messages: [],
-};
 
 // Sub-component to use useFormStatus for the message list
 function ChatArea({ messages }: { messages: ChatMessageType[] }) {
@@ -71,6 +68,12 @@ function SubmitButton() {
 }
 
 export function ChatPanel() {
+  const { activeChat, updateChat, createChat } = useChatHistory();
+  
+  const initialState: ChatState = {
+    messages: activeChat?.messages ?? [],
+  };
+
   const [state, formAction] = useActionState(submitQuery, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
@@ -79,6 +82,27 @@ export function ChatPanel() {
   const [file, setFile] = useState<File | null>(null);
   const [fileDataUri, setFileDataUri] = useState<string | null>(null);
   
+  // This effect will sync the form's state with the active chat from history
+  useEffect(() => {
+    const newInitialState: ChatState = { messages: activeChat?.messages ?? [] };
+    // This is a bit of a hack to reset the useActionState's internal state
+    // when the active chat changes.
+    formAction(newInitialState as any);
+  }, [activeChat, formAction]);
+
+
+  useEffect(() => {
+    // When the form action returns a new state, update the history
+    if (state.messages.length > (activeChat?.messages.length ?? 0)) {
+        if (!activeChat || state.messages.length === 1) { // New chat
+            createChat(state.messages);
+        } else { // Existing chat
+            updateChat(activeChat.id, state.messages);
+        }
+    }
+  }, [state.messages, activeChat, createChat, updateChat]);
+
+
   useEffect(() => {
     if (formRef.current && state.messages.length > 0) {
         // Reset form on successful assistant response
@@ -86,19 +110,20 @@ export function ChatPanel() {
             formRef.current.reset();
             setFile(null);
             setFileDataUri(null);
+            if(inputRef.current) inputRef.current.focus();
         }
     }
   }, [state.messages, state.error]);
 
   useEffect(() => {
-    if (state.error) {
+    if (state.error && state.messages.length > (activeChat?.messages.length ?? 0)) {
       toast({
         variant: 'destructive',
         title: 'Error',
         description: state.error,
       });
     }
-  }, [state.error, state.messages.length]);
+  }, [state.error, state.messages.length, activeChat?.messages.length]);
 
   const handleLocationClick = () => {
     if (navigator.geolocation) {
@@ -153,7 +178,7 @@ export function ChatPanel() {
   }
 
   return (
-    <Card className="w-full max-w-3xl h-[80vh] flex flex-col shadow-lg shadow-black/30 border-border overflow-hidden">
+    <Card className="w-full max-w-3xl h-[calc(100vh-120px)] flex flex-col shadow-lg shadow-black/30 border-border overflow-hidden">
       <CardHeader className="flex flex-row items-center gap-3">
         <Bot className="w-8 h-8 text-primary drop-shadow-[0_0_4px_hsl(var(--primary))]" />
         <div>
