@@ -13,6 +13,13 @@ interface ChatMessageProps {
 export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
   const isAi = message.role === 'assistant';
 
+  const formatTimestamp = (timestamp: number) => {
+    return new Date(timestamp).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
   return (
     <div
       className={cn('flex items-start gap-4', {
@@ -26,21 +33,34 @@ export function ChatMessage({ message, isLoading = false }: ChatMessageProps) {
           </AvatarFallback>
         </Avatar>
       )}
-      <div
-        className={cn(
-          'max-w-[75%] space-y-2 rounded-lg px-4 py-3 shadow-md',
-          isAi
-            ? 'bg-secondary text-secondary-foreground'
-            : 'bg-primary text-primary-foreground'
-        )}
-      >
-        {isLoading ? (
-            <div className="flex items-center space-x-2">
-                <LoaderCircle className="w-4 h-4 animate-spin" />
-                <span>Thinking...</span>
-            </div>
-        ) : (
-          <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+      <div className="flex flex-col gap-1">
+        <div
+          className={cn(
+            'max-w-full space-y-2 rounded-lg px-4 py-3 shadow-md',
+            isAi
+              ? 'bg-secondary text-secondary-foreground'
+              : 'bg-primary text-primary-foreground'
+          )}
+        >
+          {isLoading ? (
+              <div className="flex items-center space-x-2">
+                  <LoaderCircle className="w-4 h-4 animate-spin" />
+                  <span>Thinking...</span>
+              </div>
+          ) : (
+            <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+          )}
+        </div>
+        {!isLoading && message.timestamp && (
+          <div
+            className={cn('text-xs text-muted-foreground', {
+              'text-right': !isAi,
+              'pl-2': isAi,
+              'pr-2': !isAi,
+            })}
+          >
+            {formatTimestamp(message.timestamp)}
+          </div>
         )}
       </div>
       {!isAi && (

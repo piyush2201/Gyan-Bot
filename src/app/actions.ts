@@ -7,6 +7,7 @@ export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
+  timestamp: number;
 }
 
 export interface ChatState {
@@ -31,6 +32,7 @@ export async function submitQuery(
     id: crypto.randomUUID(),
     role: 'user',
     content: query,
+    timestamp: Date.now(),
   };
 
   try {
@@ -50,6 +52,7 @@ export async function submitQuery(
       id: crypto.randomUUID(),
       role: 'assistant',
       content: aiResponse.response,
+      timestamp: Date.now(),
     };
     
     return {

@@ -41,7 +41,7 @@ function ChatArea({ messages }: { messages: ChatMessageType[] }) {
           <ChatMessage key={message.id} message={message} />
         ))}
         {pending && !messages.find(m => m.id === 'loading') && (
-            <ChatMessage message={{id: 'loading', role: 'assistant', content: '...'}} isLoading={true} />
+            <ChatMessage message={{id: 'loading', role: 'assistant', content: '...', timestamp: Date.now()}} isLoading={true} />
         )}
       </div>
     </ScrollArea>
