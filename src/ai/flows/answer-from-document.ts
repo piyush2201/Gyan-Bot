@@ -30,9 +30,11 @@ const prompt = ai.definePrompt({
   name: 'answerFromDocumentPrompt',
   input: { schema: AnswerFromDocumentInputSchema },
   output: { schema: AnswerFromDocumentOutputSchema },
-  prompt: `You are an expert at analyzing documents and answering questions based on their content.
+  prompt: `You are an expert at analyzing documents and summarizing their content to answer user questions.
 
-You will be given a document and a user query. Your task is to carefully read the document and provide a concise and accurate answer to the user's query based *only* on the information present in the document.
+You will be given a document and a user query. Your task is to carefully read the document and provide a summarized, concise, and accurate answer to the user's query based *only* on the information present in the document.
+
+Synthesize the relevant information from the document to construct your answer. Do not just extract text verbatim.
 
 If the answer cannot be found in the document, state that clearly. Do not use any external knowledge.
 
