@@ -37,10 +37,16 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
         if (parsedHistory.length > 0) {
             // Set the most recent chat as active by default
             setActiveChatId(parsedHistory[0].id);
+        } else {
+            // If history is empty, create a new empty chat
+            createChat([]);
         }
+      } else {
+        createChat([]);
       }
     } catch (error) {
       console.error('Failed to load chat history from localStorage', error);
+      createChat([]);
     }
   }, []);
 
@@ -60,8 +66,7 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const createChat = useCallback((messages: ChatMessage[], document?: DocumentInfo | null) => {
-    // If there's already an empty chat, don't create another one.
-    // This can happen on first load.
+    // If there's already an empty chat and we are trying to create another empty one, just set it as active.
     if (chatHistory.length > 0 && chatHistory[0].messages.length === 0 && messages.length === 0) {
         setActiveChatId(chatHistory[0].id);
         return;
@@ -74,20 +79,14 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
       document,
     };
     
-    // Check if we are creating a chat from a submitted message, or starting a fresh one.
-    const isNewMessage = messages.length > 0;
-    let updatedHistory;
+    let updatedHistory = [...chatHistory];
+    const active = chatHistory.find(c => c.id === activeChatId);
 
-    if (isNewMessage) {
+    if (active && active.messages.length === 0) {
         // If the current active chat is empty, replace it.
-        const active = chatHistory.find(c => c.id === activeChatId);
-        if (active && active.messages.length === 0) {
-            updatedHistory = chatHistory.map(c => c.id === activeChatId ? newChat : c);
-        } else {
-            updatedHistory = [newChat, ...chatHistory];
-        }
+        updatedHistory = chatHistory.map(c => c.id === activeChatId ? newChat : c);
     } else {
-        updatedHistory = [newChat, ...chatHistory];
+        updatedHistory.unshift(newChat);
     }
     
     saveHistory(updatedHistory);
@@ -105,9 +104,14 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
     const updatedHistory = chatHistory.filter(chat => chat.id !== id);
     saveHistory(updatedHistory);
     if (activeChatId === id) {
-        setActiveChatId(updatedHistory[0]?.id ?? null);
+        const newActiveId = updatedHistory[0]?.id ?? null;
+        setActiveChatId(newActiveId);
+        if (!newActiveId) {
+            // If no chats are left, create a new empty one
+            createChat([]);
+        }
     }
-  }, [chatHistory, activeChatId, saveHistory]);
+  }, [chatHistory, activeChatId, saveHistory, createChat]);
 
   const clearHistory = useCallback(() => {
     try {
