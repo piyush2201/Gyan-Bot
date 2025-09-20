@@ -2,9 +2,9 @@
 'use server';
 
 /**
- * @fileOverview Generates conversational responses using AI, incorporating relevant FAQs.
+ * @fileOverview Generates conversational responses using AI.
  *
- * - generateResponse - A function that generates a conversational response based on user query and FAQs.
+ * - generateResponse - A function that generates a conversational response based on user query.
  * - GenerateResponseInput - The input type for the generateResponse function.
  * - GenerateResponseOutput - The return type for the generateResponse function.
  */
@@ -14,7 +14,6 @@ import {z} from 'genkit';
 
 const GenerateResponseInputSchema = z.object({
   query: z.string().describe('The user query to generate a response for.'),
-  faqContent: z.string().describe('Relevant FAQ content to incorporate into the response.'),
 });
 export type GenerateResponseInput = z.infer<typeof GenerateResponseInputSchema>;
 
@@ -35,10 +34,7 @@ const prompt = ai.definePrompt({
 
 If the user asks who made you, you must reply with: "My master Piyush Sonkar has made me with care and lots of love ❤️✨".
 
-If the following FAQ content is available and relevant to the user's query, use it to enrich your answer. Otherwise, use your general knowledge to provide a comprehensive and helpful response.
-
-FAQ Content:
-{{faqContent}}
+Use your general knowledge to provide a comprehensive and helpful response.
 
 User Query:
 {{query}}`,

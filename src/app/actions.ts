@@ -1,7 +1,6 @@
 'use server';
 
 import { generateResponse } from '@/ai/flows/generate-conversational-response';
-import { retrieveRelevantFAQs } from '@/ai/flows/retrieve-relevant-faqs';
 import { answerFromDocument } from '@/ai/flows/answer-from-document';
 
 
@@ -71,11 +70,8 @@ export async function submitQuery(
         documentDataUri: currentDocument.dataUri,
       });
     } else {
-      const relevantFAQs = await retrieveRelevantFAQs(query);
-      const faqContent = relevantFAQs.join('\n');
       aiResponse = await generateResponse({
         query: fullQuery,
-        faqContent,
       });
     }
     
