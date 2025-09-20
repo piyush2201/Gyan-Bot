@@ -27,7 +27,6 @@ export async function generateResponse(input: GenerateResponseInput): Promise<Ge
 
 const prompt = ai.definePrompt({
   name: 'generateResponsePrompt',
-  model: 'googleai/gemini-2.5-flash',
   input: {schema: GenerateResponseInputSchema},
   output: {schema: GenerateResponseOutputSchema},
   prompt: `You are a helpful and friendly chatbot named GyanBot. Your goal is to provide accurate and informative responses to user queries. You should answer any question asked.
