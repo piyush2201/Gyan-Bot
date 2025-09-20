@@ -75,7 +75,7 @@ export async function submitQuery(
       });
     }
     
-    const responseContent = (aiResponse as any).response || (aiResponse as any).answer;
+    const responseContent = (aiResponse as any).answer || (aiResponse as any).response;
 
     if (!responseContent) {
       throw new Error('AI failed to generate a response.');

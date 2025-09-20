@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useActionState, useState, startTransition } from 'react';
 import { useFormStatus } from 'react-dom';
-import { Send, Bot, LoaderCircle, MapPin, Paperclip, X } from 'lucide-react';
+import { Send, Bot, LoaderCircle, Paperclip, X } from 'lucide-react';
 import { submitQuery, type ChatState, type ChatMessage as ChatMessageType } from '@/app/actions';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -91,6 +91,11 @@ export function ChatPanel() {
     startTransition(() => {
         formAction(newInitialState);
     });
+
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+    
     // If the active chat has a document, reflect it in the local file state
     if (activeChat?.document) {
         setFile({ name: activeChat.document.name } as File);
@@ -141,34 +146,6 @@ export function ChatPanel() {
       });
     }
   }, [state.error, state.messages.length, activeChat?.messages.length]);
-
-  const handleLocationClick = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          const locationQuery = `My current location is Latitude: ${latitude}, Longitude: ${longitude}. What can you tell me about this place?`;
-          if (inputRef.current) {
-            inputRef.current.value = locationQuery;
-            formRef.current?.requestSubmit();
-          }
-        },
-        (error) => {
-          toast({
-            variant: 'destructive',
-            title: 'Location Error',
-            description: `Could not get location: ${error.message}`,
-          });
-        }
-      );
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Location Error',
-        description: 'Geolocation is not supported by this browser.',
-      });
-    }
-  };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -249,16 +226,6 @@ export function ChatPanel() {
               >
                 <Paperclip className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
                 <span className="sr-only">Attach file</span>
-              </Button>
-              <Button
-                type="button"
-                size="icon"
-                variant="outline"
-                onClick={handleLocationClick}
-                className="group shrink-0"
-              >
-                <MapPin className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
-                <span className="sr-only">Get location</span>
               </Button>
               <SubmitButton />
             </div>
