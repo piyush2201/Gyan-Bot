@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useActionState } from 'react';
+import { useEffect, useRef, useActionState, useState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { Send, Bot, LoaderCircle, MapPin } from 'lucide-react';
+import { Send, Bot, LoaderCircle, MapPin, Paperclip, X } from 'lucide-react';
 import { submitQuery, type ChatState, type ChatMessage as ChatMessageType } from '@/app/actions';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { ChatMessage } from './chat-message';
+import { Badge } from '@/components/ui/badge';
 
 const initialState: ChatState = {
   messages: [],
@@ -18,7 +19,6 @@ const initialState: ChatState = {
 // Sub-component to use useFormStatus for the message list
 function ChatArea({ messages }: { messages: ChatMessageType[] }) {
   const { pending } = useFormStatus();
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const viewportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ function ChatArea({ messages }: { messages: ChatMessageType[] }) {
   }, [messages, pending]);
 
   return (
-    <ScrollArea className="h-full" viewportRef={viewportRef} ref={scrollAreaRef}>
+    <ScrollArea className="h-full" viewportRef={viewportRef}>
       <div className="p-6 space-y-6">
         {messages.length === 0 && !pending && (
           <div className="text-center text-muted-foreground pt-16">
@@ -75,12 +75,17 @@ export function ChatPanel() {
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [fileDataUri, setFileDataUri] = useState<string | null>(null);
   
   useEffect(() => {
     if (formRef.current && state.messages.length > 0) {
         // Reset form on successful assistant response
         if (!state.error && state.messages.at(-1)?.role === 'assistant') {
             formRef.current.reset();
+            setFile(null);
+            setFileDataUri(null);
         }
     }
   }, [state.messages, state.error]);
@@ -123,13 +128,37 @@ export function ChatPanel() {
     }
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
+      const reader = new FileReader();
+      reader.onload = (loadEvent) => {
+        setFileDataUri(loadEvent.target?.result as string);
+      };
+      reader.readAsDataURL(selectedFile);
+    }
+  };
+
+  const handleFileButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const removeFile = () => {
+    setFile(null);
+    setFileDataUri(null);
+    if(fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
+  }
+
   return (
     <Card className="w-full max-w-3xl h-[80vh] flex flex-col shadow-lg shadow-black/30 border-border overflow-hidden">
       <CardHeader className="flex flex-row items-center gap-3">
         <Bot className="w-8 h-8 text-primary drop-shadow-[0_0_4px_hsl(var(--primary))]" />
         <div>
           <CardTitle className="font-headline text-primary-foreground">GyanBot</CardTitle>
-          <CardDescription>Ask me anything! I'll do my best to help.</CardDescription>
+          <CardDescription>Ask me anything! I can also answer questions about documents you upload.</CardDescription>
         </div>
       </CardHeader>
       <div className="flex-1 flex flex-col min-h-0">
@@ -137,8 +166,20 @@ export function ChatPanel() {
           <CardContent className="flex-1 p-0 overflow-y-auto">
             <ChatArea messages={state.messages} />
           </CardContent>
-          <CardFooter className="pt-4">
+          <CardFooter className="pt-4 flex flex-col items-start gap-2">
+            {file && (
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className="pl-2">
+                    <span className="truncate max-w-xs">{file.name}</span>
+                    <Button variant="ghost" size="icon" className="h-5 w-5 ml-1" onClick={removeFile}>
+                        <X className="h-4 w-4" />
+                        <span className="sr-only">Remove file</span>
+                    </Button>
+                </Badge>
+              </div>
+            )}
             <div className="flex w-full items-center space-x-2">
+              <input type="hidden" name="fileDataUri" value={fileDataUri || ''} />
               <Input
                 ref={inputRef}
                 name="query"
@@ -147,6 +188,17 @@ export function ChatPanel() {
                 autoComplete="off"
                 required
               />
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="application/pdf,text/plain,.md" />
+              <Button
+                type="button"
+                size="icon"
+                variant="outline"
+                onClick={handleFileButtonClick}
+                className="group shrink-0"
+              >
+                <Paperclip className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
+                <span className="sr-only">Attach file</span>
+              </Button>
               <Button
                 type="button"
                 size="icon"

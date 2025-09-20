@@ -2,6 +2,8 @@
 
 import { generateResponse } from '@/ai/flows/generate-conversational-response';
 import { retrieveRelevantFAQs } from '@/ai/flows/retrieve-relevant-faqs';
+import { answerFromDocument } from '@/ai/flows/answer-from-document';
+
 
 export interface ChatMessage {
   id: string;
@@ -20,6 +22,7 @@ export async function submitQuery(
   formData: FormData
 ): Promise<ChatState> {
   const query = formData.get('query') as string;
+  const fileDataUri = formData.get('fileDataUri') as string;
 
   if (!query) {
     return {
@@ -36,22 +39,32 @@ export async function submitQuery(
   };
 
   try {
-    const relevantFAQs = await retrieveRelevantFAQs(query);
-    const faqContent = relevantFAQs.join('\n');
+    let aiResponse;
 
-    const aiResponse = await generateResponse({
-      query,
-      faqContent,
-    });
+    if (fileDataUri) {
+      aiResponse = await answerFromDocument({
+        query,
+        documentDataUri: fileDataUri,
+      });
+    } else {
+      const relevantFAQs = await retrieveRelevantFAQs(query);
+      const faqContent = relevantFAQs.join('\n');
+      aiResponse = await generateResponse({
+        query,
+        faqContent,
+      });
+    }
     
-    if (!aiResponse || !aiResponse.response) {
+    const responseContent = (aiResponse as any).response || (aiResponse as any).answer;
+
+    if (!responseContent) {
       throw new Error('AI failed to generate a response.');
     }
 
     const assistantMessage: ChatMessage = {
       id: crypto.randomUUID(),
       role: 'assistant',
-      content: aiResponse.response,
+      content: responseContent,
       timestamp: Date.now(),
     };
     
