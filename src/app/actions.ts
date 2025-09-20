@@ -19,8 +19,14 @@ export interface ChatState {
 
 export async function submitQuery(
   previousState: ChatState,
-  formData: FormData
+  formData: FormData | ChatState
 ): Promise<ChatState> {
+  // When switching chats, formData is not a FormData object.
+  // We can identify this case and simply return the new state.
+  if (!(formData instanceof FormData)) {
+    return { messages: (formData as ChatState).messages };
+  }
+  
   const query = formData.get('query') as string;
   const fileDataUri = formData.get('fileDataUri') as string;
 
