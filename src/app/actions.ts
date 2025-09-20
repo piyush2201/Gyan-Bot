@@ -38,19 +38,24 @@ export async function submitQuery(
     timestamp: Date.now(),
   };
 
+  const currentMessages = [...previousState.messages, userMessage];
+
   try {
     let aiResponse;
+    const history = currentMessages.map(m => `${m.role}: ${m.content}`).join('\n');
+    const fullQuery = `CONVERSATION HISTORY:\n${history}\n\nCURRENT QUERY: ${query}`;
+
 
     if (fileDataUri) {
       aiResponse = await answerFromDocument({
-        query,
+        query: fullQuery,
         documentDataUri: fileDataUri,
       });
     } else {
       const relevantFAQs = await retrieveRelevantFAQs(query);
       const faqContent = relevantFAQs.join('\n');
       aiResponse = await generateResponse({
-        query,
+        query: fullQuery,
         faqContent,
       });
     }
@@ -69,7 +74,7 @@ export async function submitQuery(
     };
     
     return {
-      messages: [...previousState.messages, userMessage, assistantMessage],
+      messages: [...currentMessages, assistantMessage],
     };
   } catch (error) {
     console.error(error);
@@ -77,7 +82,7 @@ export async function submitQuery(
     
     // Return the user message in the history even on error, for better UX
     return {
-      messages: [...previousState.messages, userMessage],
+      messages: currentMessages,
       error: `Sorry, something went wrong. ${errorMessage}`,
     };
   }
