@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ChatHistoryProvider } from '@/hooks/use-chat-history';
 
 export const metadata: Metadata = {
-  title: 'GyanBot',
+  title: 'Query Bot',
   description: 'An AI-powered FAQ chatbot.',
 };
 

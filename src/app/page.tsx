@@ -36,7 +36,7 @@ export default function Home() {
                   <path d="M7 14.5a2.5 2.5 0 0 1 0-5" />
                 </svg>
                 <h1 className="text-2xl font-bold font-headline tracking-wider text-primary-foreground">
-                  GyanBot
+                  Query Bot
                 </h1>
               </div>
               <NewChatButton />

@@ -32,7 +32,7 @@ function ChatArea({ messages }: { messages: ChatMessageType[] }) {
         {messages.length === 0 && !pending && (
           <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground pt-16">
             <Bot className="w-16 h-16 mb-4 text-primary/50" />
-            <p className="text-lg">GyanBot at your service</p>
+            <p className="text-lg">Query Bot at your service</p>
             <p>Start a new conversation or upload a document.</p>
           </div>
         )}

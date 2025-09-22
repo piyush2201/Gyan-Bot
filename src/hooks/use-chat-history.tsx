@@ -22,7 +22,7 @@ interface ChatHistoryContextType {
 
 const ChatHistoryContext = createContext<ChatHistoryContextType | undefined>(undefined);
 
-const CHAT_HISTORY_STORAGE_KEY = 'gyanbot-chat-history';
+const CHAT_HISTORY_STORAGE_KEY = 'querybot-chat-history';
 
 export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
