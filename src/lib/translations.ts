@@ -43,6 +43,17 @@ export const translations = {
     thinking: 'Denken...',
     attachFile: 'Datei anhängen',
   },
+  Hindi: {
+    title: 'क्वेरी बॉट',
+    chatHistory: 'चैट इतिहास',
+    newChat: 'नई चैट',
+    clearHistory: 'इतिहास साफ़ करें',
+    botAtYourService: 'क्वेरी बॉट आपकी सेवा में',
+    startConversation: 'एक नई बातचीत शुरू करें या एक दस्तावेज़ अपलोड करें।',
+    inputPlaceholder: 'अपना प्रश्न यहाँ टाइप करें...',
+    thinking: 'सोच रहा है...',
+    attachFile: 'फ़ाइल जोड़ें',
+  },
 };
 
 export const languages = Object.keys(translations) as (keyof typeof translations)[];
