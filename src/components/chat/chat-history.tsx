@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, MessageSquare, Trash2 } from 'lucide-react';
+import { MessageSquare, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   SidebarContent,
@@ -8,18 +8,12 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarTrigger,
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { useChatHistory } from '@/hooks/use-chat-history';
-import { cn } from '@/lib/utils';
 
 export function ChatHistory() {
-  const { chatHistory, activeChat, setActiveChat, createChat, deleteChat, clearHistory } = useChatHistory();
-
-  const handleNewChat = () => {
-    createChat([]); // Creates an empty chat
-  };
+  const { chatHistory, activeChat, setActiveChat, deleteChat, clearHistory } = useChatHistory();
   
   const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
@@ -29,17 +23,7 @@ export function ChatHistory() {
   return (
     <>
       <SidebarHeader>
-        <div className="flex items-center gap-2">
-          <SidebarTrigger />
-          <h2 className="text-lg font-semibold font-headline">History</h2>
-        </div>
-        <Button
-          variant="outline"
-          className="w-full justify-start h-9"
-          onClick={handleNewChat}
-        >
-          <Plus className="mr-2" /> New Chat
-        </Button>
+        <h2 className="text-lg font-semibold font-headline">Chat History</h2>
       </SidebarHeader>
 
       <SidebarContent>
@@ -72,7 +56,7 @@ export function ChatHistory() {
       </SidebarContent>
 
       <SidebarFooter>
-        <Button variant="destructive" onClick={clearHistory}>
+        <Button variant="destructive" onClick={clearHistory} className="w-full">
             <Trash2 className="mr-2" /> Clear History
         </Button>
       </SidebarFooter>

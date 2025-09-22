@@ -4,7 +4,6 @@ import { useEffect, useRef, useActionState, useState, startTransition } from 're
 import { useFormStatus } from 'react-dom';
 import { Send, Bot, LoaderCircle, Paperclip, X } from 'lucide-react';
 import { submitQuery, type ChatState, type ChatMessage as ChatMessageType } from '@/app/actions';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -29,10 +28,12 @@ function ChatArea({ messages }: { messages: ChatMessageType[] }) {
 
   return (
     <ScrollArea className="h-full" viewportRef={viewportRef}>
-      <div className="p-6 space-y-6">
+      <div className="p-4 sm:p-6 space-y-6">
         {messages.length === 0 && !pending && (
-          <div className="text-center text-muted-foreground pt-16">
-            <p>No messages yet. Start the conversation!</p>
+          <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground pt-16">
+            <Bot className="w-16 h-16 mb-4 text-primary/50" />
+            <p className="text-lg">GyanBot at your service</p>
+            <p>Start a new conversation or upload a document.</p>
           </div>
         )}
         {messages.map((message) => (
@@ -182,22 +183,14 @@ export function ChatPanel() {
   const currentFile = file || (state.document ? {name: state.document.name} as File : null);
 
   return (
-    <Card className="w-full max-w-3xl h-[calc(100vh-120px)] flex flex-col shadow-lg shadow-black/30 border-border overflow-hidden">
-      <CardHeader className="flex flex-row items-center gap-3">
-        <Bot className="w-8 h-8 text-primary drop-shadow-[0_0_4px_hsl(var(--primary))]" />
-        <div>
-          <CardTitle className="font-headline text-primary-foreground">GyanBot</CardTitle>
-          <CardDescription>Ask me anything! I can also answer questions about documents you upload.</CardDescription>
-        </div>
-      </CardHeader>
-      <div className="flex-1 flex flex-col min-h-0">
+    <div className="w-full max-w-4xl h-full flex flex-col bg-card rounded-lg border border-border shadow-lg shadow-black/30">
         <form ref={formRef} action={formAction} className="flex flex-col flex-1 min-h-0">
-          <CardContent className="flex-1 p-0 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto">
             <ChatArea messages={state.messages} />
-          </CardContent>
-          <CardFooter className="pt-4 flex flex-col items-start gap-2">
+          </div>
+          <div className="p-4 border-t border-border bg-background/50 rounded-b-lg">
             {currentFile && (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mb-2">
                 <Badge variant="secondary" className="pl-2">
                     <span className="truncate max-w-xs">{currentFile.name}</span>
                     <Button variant="ghost" size="icon" className="h-5 w-5 ml-1" onClick={removeFile}>
@@ -214,7 +207,7 @@ export function ChatPanel() {
                 ref={inputRef}
                 name="query"
                 placeholder="Type your question here..."
-                className="flex-1 bg-background text-base focus-visible:ring-primary"
+                className="flex-1 bg-input text-base focus-visible:ring-primary"
                 autoComplete="off"
                 required
               />
@@ -232,9 +225,8 @@ export function ChatPanel() {
               </Button>
               <SubmitButton />
             </div>
-          </CardFooter>
+          </div>
         </form>
-      </div>
-    </Card>
+    </div>
   );
 }
