@@ -28,6 +28,40 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
   const [chatHistory, setChatHistory] = useState<ChatSession[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
 
+  const createChat = useCallback((messages: ChatMessage[], document?: DocumentInfo | null) => {
+    // This function is defined here but also referenced in useEffect, so we need to use useCallback and manage its dependencies.
+    // It's defined before the `saveHistory` it uses, so we'll need to make sure `saveHistory` is also using useCallback.
+    const newChat: ChatSession = {
+      id: crypto.randomUUID(),
+      messages,
+      createdAt: Date.now(),
+      document,
+    };
+    
+    setChatHistory(prevHistory => {
+        let updatedHistory = [...prevHistory];
+        const active = prevHistory.find(c => c.id === activeChatId);
+
+        if (active && active.messages.length === 0) {
+            updatedHistory = prevHistory.map(c => c.id === activeChatId ? newChat : c);
+        } else {
+            updatedHistory.unshift(newChat);
+        }
+        
+        // This is a good place to save the history
+        try {
+          const sortedHistory = [...updatedHistory].sort((a, b) => b.createdAt - a.createdAt);
+          localStorage.setItem(CHAT_HISTORY_STORAGE_KEY, JSON.stringify(sortedHistory));
+        } catch (error) {
+          console.error('Failed to save chat history to localStorage', error);
+        }
+        
+        return updatedHistory;
+    });
+
+    setActiveChatId(newChat.id);
+  }, [activeChatId]);
+
   useEffect(() => {
     try {
       const storedHistory = localStorage.getItem(CHAT_HISTORY_STORAGE_KEY);
@@ -35,10 +69,8 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
         const parsedHistory = JSON.parse(storedHistory) as ChatSession[];
         setChatHistory(parsedHistory);
         if (parsedHistory.length > 0) {
-            // Set the most recent chat as active by default
             setActiveChatId(parsedHistory[0].id);
         } else {
-            // If history is empty, create a new empty chat
             createChat([]);
         }
       } else {
@@ -48,11 +80,11 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
       console.error('Failed to load chat history from localStorage', error);
       createChat([]);
     }
-  }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only once on mount
 
   const saveHistory = useCallback((history: ChatSession[]) => {
     try {
-      // Sort by creation date, newest first
       const sortedHistory = [...history].sort((a, b) => b.createdAt - a.createdAt);
       localStorage.setItem(CHAT_HISTORY_STORAGE_KEY, JSON.stringify(sortedHistory));
       setChatHistory(sortedHistory);
@@ -64,34 +96,6 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
   const setActiveChat = useCallback((id: string | null) => {
     setActiveChatId(id);
   }, []);
-
-  const createChat = useCallback((messages: ChatMessage[], document?: DocumentInfo | null) => {
-    // If there's already an empty chat and we are trying to create another empty one, just set it as active.
-    if (chatHistory.length > 0 && chatHistory[0].messages.length === 0 && messages.length === 0) {
-        setActiveChatId(chatHistory[0].id);
-        return;
-    }
-      
-    const newChat: ChatSession = {
-      id: crypto.randomUUID(),
-      messages,
-      createdAt: Date.now(),
-      document,
-    };
-    
-    let updatedHistory = [...chatHistory];
-    const active = chatHistory.find(c => c.id === activeChatId);
-
-    if (active && active.messages.length === 0) {
-        // If the current active chat is empty, replace it.
-        updatedHistory = chatHistory.map(c => c.id === activeChatId ? newChat : c);
-    } else {
-        updatedHistory.unshift(newChat);
-    }
-    
-    saveHistory(updatedHistory);
-    setActiveChatId(newChat.id);
-  }, [chatHistory, activeChatId, saveHistory]);
 
   const updateChat = useCallback((id: string, messages: ChatMessage[], document?: DocumentInfo | null) => {
     const updatedHistory = chatHistory.map(chat =>
@@ -107,7 +111,6 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
         const newActiveId = updatedHistory[0]?.id ?? null;
         setActiveChatId(newActiveId);
         if (!newActiveId) {
-            // If no chats are left, create a new empty one
             createChat([]);
         }
     }
@@ -118,7 +121,6 @@ export const ChatHistoryProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem(CHAT_HISTORY_STORAGE_KEY);
       setChatHistory([]);
       setActiveChatId(null);
-      // After clearing, create a new empty chat to start with.
       createChat([]);
     } catch (error) {
       console.error('Failed to clear chat history from localStorage', error);

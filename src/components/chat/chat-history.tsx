@@ -11,10 +11,14 @@ import {
   SidebarFooter,
 } from '@/components/ui/sidebar';
 import { useChatHistory } from '@/hooks/use-chat-history';
+import { useLanguage } from '@/hooks/use-language';
+import { translations } from '@/lib/translations';
 
 export function ChatHistory() {
   const { chatHistory, activeChat, setActiveChat, deleteChat, clearHistory } = useChatHistory();
-  
+  const { language } = useLanguage();
+  const t = translations[language];
+
   const handleDeleteChat = (e: React.MouseEvent, chatId: string) => {
     e.stopPropagation();
     deleteChat(chatId);
@@ -23,7 +27,7 @@ export function ChatHistory() {
   return (
     <>
       <SidebarHeader>
-        <h2 className="text-lg font-semibold font-headline">Chat History</h2>
+        <h2 className="text-lg font-semibold font-headline">{t.chatHistory}</h2>
       </SidebarHeader>
 
       <SidebarContent>
@@ -38,7 +42,7 @@ export function ChatHistory() {
                 >
                   <MessageSquare className="shrink-0" />
                   <span className="truncate flex-1">
-                    {chat.messages[0]?.content ?? 'New Chat'}
+                    {chat.messages[0]?.content ?? t.newChat}
                   </span>
                 </SidebarMenuButton>
                 <Button
@@ -57,7 +61,7 @@ export function ChatHistory() {
 
       <SidebarFooter>
         <Button variant="destructive" onClick={clearHistory} className="w-full">
-            <Trash2 className="mr-2" /> Clear History
+            <Trash2 className="mr-2" /> {t.clearHistory}
         </Button>
       </SidebarFooter>
     </>

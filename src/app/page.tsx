@@ -1,14 +1,17 @@
+'use client';
+
 import { ChatHistory } from '@/components/chat/chat-history';
 import { ChatPanel } from '@/components/chat/chat-panel';
-import {
-  Sidebar,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar';
+import { Sidebar, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { NewChatButton } from '@/components/chat/new-chat-button';
-
+import { LanguageSelector } from '@/components/language-selector';
+import { useLanguage } from '@/hooks/use-language';
+import { translations } from '@/lib/translations';
 
 export default function Home() {
+  const { language } = useLanguage();
+  const t = translations[language];
+
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-background text-foreground">
@@ -36,10 +39,13 @@ export default function Home() {
                   <path d="M7 14.5a2.5 2.5 0 0 1 0-5" />
                 </svg>
                 <h1 className="text-2xl font-bold font-headline tracking-wider text-primary-foreground">
-                  Query Bot
+                  {t.title}
                 </h1>
               </div>
-              <NewChatButton />
+              <div className="flex items-center gap-2">
+                <LanguageSelector />
+                <NewChatButton />
+              </div>
             </div>
           </header>
           <main className="flex-1 flex items-center justify-center p-4">

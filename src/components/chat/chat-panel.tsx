@@ -11,11 +11,14 @@ import { useToast } from '@/hooks/use-toast';
 import { useChatHistory } from '@/hooks/use-chat-history';
 import { ChatMessage } from './chat-message';
 import { Badge } from '@/components/ui/badge';
+import { useLanguage } from '@/hooks/use-language';
+import { translations } from '@/lib/translations';
 
-// Sub-component to use useFormStatus for the message list
 function ChatArea({ messages }: { messages: ChatMessageType[] }) {
   const { pending } = useFormStatus();
   const viewportRef = useRef<HTMLDivElement>(null);
+  const { language } = useLanguage();
+  const t = translations[language];
 
   useEffect(() => {
     if (viewportRef.current) {
@@ -32,8 +35,8 @@ function ChatArea({ messages }: { messages: ChatMessageType[] }) {
         {messages.length === 0 && !pending && (
           <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground pt-16">
             <Bot className="w-16 h-16 mb-4 text-primary/50" />
-            <p className="text-lg">Query Bot at your service</p>
-            <p>Start a new conversation or upload a document.</p>
+            <p className="text-lg">{t.botAtYourService}</p>
+            <p>{t.startConversation}</p>
           </div>
         )}
         {messages.map((message) => (
@@ -47,7 +50,6 @@ function ChatArea({ messages }: { messages: ChatMessageType[] }) {
   );
 }
 
-// Sub-component to use useFormStatus for the submit button
 function SubmitButton() {
   const { pending } = useFormStatus();
   return (
@@ -70,6 +72,8 @@ function SubmitButton() {
 
 export function ChatPanel() {
   const { activeChat, updateChat, createChat } = useChatHistory();
+  const { language } = useLanguage();
+  const t = translations[language];
   
   const initialState: ChatState = activeChat ? {
     messages: activeChat.messages,
@@ -87,11 +91,8 @@ export function ChatPanel() {
   const [file, setFile] = useState<File | null>(null);
   const [fileDataUri, setFileDataUri] = useState<string | null>(null);
   
-  // This effect will sync the form's state with the active chat from history
   useEffect(() => {
     const newInitialState: ChatState = { messages: activeChat?.messages ?? [], document: activeChat?.document };
-    // This is a bit of a hack to reset the useActionState's internal state
-    // when the active chat changes. We wrap it in startTransition to avoid the warning.
     startTransition(() => {
         formAction(newInitialState);
     });
@@ -100,7 +101,6 @@ export function ChatPanel() {
       inputRef.current.value = '';
     }
     
-    // If the active chat has a document, reflect it in the local file state
     if (activeChat?.document) {
         setFile({ name: activeChat.document.name } as File);
         setFileDataUri(activeChat.document.dataUri);
@@ -108,30 +108,26 @@ export function ChatPanel() {
         setFile(null);
         setFileDataUri(null);
     }
-  }, [activeChat]);
+  }, [activeChat, formAction]);
 
 
   useEffect(() => {
-    // When the form action returns a new state, update the history
     if (state.messages.length > (activeChat?.messages.length ?? 0)) {
-        if (!activeChat || (state.messages.length === 1 && !activeChat.messages.length)) { // New chat or first message in a new chat
+        if (!activeChat || (state.messages.length === 1 && !activeChat.messages.length)) {
             createChat(state.messages, state.document);
-        } else { // Existing chat
+        } else {
             updateChat(activeChat.id, state.messages, state.document);
         }
     }
-  }, [state.messages, state.document]);
+  }, [state.messages, state.document, activeChat, createChat, updateChat]);
 
 
   useEffect(() => {
     if (formRef.current && state.messages.length > 0) {
-        // Reset form on successful assistant response, but keep file info if a new file wasn't just uploaded.
         if (!state.error && state.messages.at(-1)?.role === 'assistant') {
             const isNewFileUpload = !!(formRef.current.querySelector('input[name="fileDataUri"]') as HTMLInputElement)?.value;
             formRef.current.reset();
 
-            // If we are not in a new file upload, don't clear the file state
-            // to allow follow-up questions.
             if(isNewFileUpload) {
               setFile(null);
               setFileDataUri(null);
@@ -149,7 +145,7 @@ export function ChatPanel() {
         description: state.error,
       });
     }
-  }, [state.error, state.messages.length, activeChat?.messages.length]);
+  }, [state.error, state.messages.length, activeChat?.messages.length, toast]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -173,13 +169,11 @@ export function ChatPanel() {
     if(fileInputRef.current) {
         fileInputRef.current.value = '';
     }
-    // Also update the chat history if there was an active document
     if (activeChat && activeChat.document) {
         updateChat(activeChat.id, activeChat.messages, null);
     }
   }
 
-  // Use the file state, which could be from a new upload or from the chat history
   const currentFile = file || (state.document ? {name: state.document.name} as File : null);
 
   return (
@@ -203,10 +197,11 @@ export function ChatPanel() {
             <div className="flex w-full items-center space-x-2">
               <input type="hidden" name="fileDataUri" value={fileDataUri || ''} />
               <input type="hidden" name="fileName" value={file?.name || ''} />
+              <input type="hidden" name="language" value={language} />
               <Input
                 ref={inputRef}
                 name="query"
-                placeholder="Type your question here..."
+                placeholder={t.inputPlaceholder}
                 className="flex-1 bg-input text-base focus-visible:ring-primary"
                 autoComplete="off"
                 required
@@ -218,10 +213,11 @@ export function ChatPanel() {
                 variant="outline"
                 onClick={handleFileButtonClick}
                 className="group shrink-0"
-                disabled={!!currentFile} // Disable adding a new file if one is already attached
+                disabled={!!currentFile}
+                aria-label={t.attachFile}
               >
                 <Paperclip className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
-                <span className="sr-only">Attach file</span>
+                <span className="sr-only">{t.attachFile}</span>
               </Button>
               <SubmitButton />
             </div>

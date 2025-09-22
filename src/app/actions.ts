@@ -2,7 +2,7 @@
 
 import { generateResponse } from '@/ai/flows/generate-conversational-response';
 import { answerFromDocument } from '@/ai/flows/answer-from-document';
-
+import { translateText } from '@/ai/flows/translate-text';
 
 export interface ChatMessage {
   id: string;
@@ -18,7 +18,7 @@ export interface DocumentInfo {
 
 export interface ChatState {
   messages: ChatMessage[];
-  document?: DocumentInfo | null; // Keep track of the document in the chat
+  document?: DocumentInfo | null;
   error?: string;
 }
 
@@ -26,14 +26,14 @@ export async function submitQuery(
   previousState: ChatState,
   formData: FormData | ChatState
 ): Promise<ChatState> {
-  // When switching chats, formData is not a FormData object but the new ChatState.
   if (!(formData instanceof FormData)) {
-    return formData; // Simply return the new state for the active chat
+    return formData;
   }
   
   const query = formData.get('query') as string;
   const fileDataUri = formData.get('fileDataUri') as string;
   const fileName = formData.get('fileName') as string;
+  const language = (formData.get('language') as string) || 'English';
 
   if (!query) {
     return {
@@ -51,7 +51,6 @@ export async function submitQuery(
   
   const currentMessages = [...previousState.messages, userMessage];
   
-  // Determine if we have a document for this session
   let currentDocument = previousState.document;
   if (fileDataUri && fileName) {
     currentDocument = { name: fileName, dataUri: fileDataUri };
@@ -75,10 +74,15 @@ export async function submitQuery(
       });
     }
     
-    const responseContent = (aiResponse as any).answer || (aiResponse as any).response;
+    let responseContent = (aiResponse as any).answer || (aiResponse as any).response;
 
     if (!responseContent) {
       throw new Error('AI failed to generate a response.');
+    }
+    
+    if (language !== 'English') {
+      const translatedResponse = await translateText({ text: responseContent, targetLanguage: language });
+      responseContent = translatedResponse.translatedText;
     }
 
     const assistantMessage: ChatMessage = {
@@ -90,13 +94,12 @@ export async function submitQuery(
     
     return {
       messages: [...currentMessages, assistantMessage],
-      document: currentDocument, // Persist the document within this chat session's state
+      document: currentDocument,
     };
   } catch (error) {
     console.error(error);
     const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
     
-    // Return the user message in the history even on error, for better UX
     return {
       messages: currentMessages,
       document: currentDocument,
