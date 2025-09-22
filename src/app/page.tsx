@@ -25,6 +25,8 @@ export default function Home() {
                 <SidebarTrigger />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -33,10 +35,12 @@ export default function Home() {
                   strokeLinejoin="round"
                   className="w-8 h-8 text-primary drop-shadow-[0_0_4px_hsl(var(--primary))]"
                 >
-                  <path d="M17 9.5a2.5 2.5 0 0 1 0 5" />
-                  <path d="M21 12a6.5 6.5 0 0 1-11.8 4.5" />
-                  <path d="M3.2 16.5A6.5 6.5 0 0 1 12 7.5a6.5 6.5 0 0 1 7.2 4.5" />
-                  <path d="M7 14.5a2.5 2.5 0 0 1 0-5" />
+                  <path d="M12 8V4H8" />
+                  <rect width="16" height="12" x="4" y="8" rx="2" />
+                  <path d="M2 14h2" />
+                  <path d="M20 14h2" />
+                  <path d="M15 13v2" />
+                  <path d="M9 13v2" />
                 </svg>
                 <h1 className="text-2xl font-bold font-headline tracking-wider text-primary-foreground">
                   {t.title}
